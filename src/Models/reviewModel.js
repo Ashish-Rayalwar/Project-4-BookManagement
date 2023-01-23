@@ -10,7 +10,7 @@ const reviewSchema = new mongoose.Schema(
       value: "user",
     },
 
-    reviewedAt: { type: Date.now("YYYY-MM-DD"), required: true },
+    reviewedAt: { type: Date, required: true },
 
     rating: { type: Number, minlength: 1, maxlength: 5, required: true },
     review: { type: String },

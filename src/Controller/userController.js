@@ -63,7 +63,7 @@ const loginUser = async(req,res)=>{
     let userId = findUser._id.toString()
 
     let token = JWT.sign({userId:userId},"group2project-4",{
-        expiresIn:10,
+        expiresIn:86400,
     })
     let dekodetoken = JWT.verify(token,"group2project-4" )
 
