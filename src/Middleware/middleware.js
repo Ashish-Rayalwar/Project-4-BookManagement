@@ -27,6 +27,19 @@ const verifyToken = async (req,res,next)=>{
 
 
 
+const verifyTokenAndAuthorization = (req,res,next)=>{
+    verifyToken(req,res,()=>{
+        if(req.tokenDetails.userId === req.params.id){
+            next()
+        }else{
+            res.status(403).send({msg:"you are not authorized to perform this task"})
+        }
+    })
+}
 
 
-module.exports = {verifyToken}
+
+
+
+
+module.exports = {verifyToken,verifyTokenAndAuthorization}

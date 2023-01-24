@@ -5,9 +5,11 @@ const  mongoose  = require("mongoose")
 const validator = require("validator")
 const userModel = require("../Models/userModel")
 const reviewModel = require("../Models/reviewModel")
+const { findOneAndUpdate } = require("../Models/userModel")
 
 
-let isbnRegex = /^(?=(?:\D*\d){10}(?:(?:\D*\d){3})?$)[\d-]+$/g
+// let isbnRegex = /^(?=(?:\D*\d){10}(?:(?:\D*\d){3})?$)[\d-]+$/g
+let isbnRegex = /^(?=(?:\D*\d){10}(?:(?:\D*\d){3})?$)[\d-]+$/
 
 
 
@@ -104,6 +106,11 @@ const getBooks = async(req,res)=>{
 }
 
 
+
+
+
+
+
 const getBookById = async function (req, res) {
     try {
         let bookId = req.params.bookId;
@@ -112,7 +119,7 @@ const getBookById = async function (req, res) {
         
         if (!mongoose.isValidObjectId(bookId)) return res.status(400).send({ status: false, msg: "bookId is not valid" })
         
-        let bookData = await bookModel.findById({ _id: bookId, isDeleted: false }).lean()
+        let bookData = await bookModel.findById({ _id: bookId, isDeleted: false }).select({__v:0,isDeleted:0})
 
         if (!bookData) return res.status(404).send({ msg: "no book found" })
         
@@ -129,4 +136,70 @@ const getBookById = async function (req, res) {
 
 
 
-module.exports = {createBook,getBooks,getBookById}
+
+
+const updateBookById = async (req,res)=>{
+    try {
+        let data = req.body
+        let bookId = req.params.bookId
+        let { title, excerpt, releasedAt, ISBN} = data
+        
+        if(title){
+            if(!validator.isAlpha(title.split(" ").join(""))) return res.status(400).send({status:false,message:"plz provide valide title "})
+        }
+        if(excerpt){
+            if(!validator.isAlpha(excerpt)) return res.status(400).send({status:false,message:"plz provide valide excerpt"})
+        }
+        if(releasedAt){
+            if(!validator.isDate(releasedAt)) return res.status(400).send({status:false,message:"Invalid date or formate,plz send date in this formate (YYYY/MM/DD) "})
+        }
+        if(ISBN){
+            if(!isbnRegex.test(ISBN)) return res.status(400).send({status:false,message:"plz provide valide regex ISBN"})
+        }
+
+        let findDuplicateValue = await bookModel.findOne({$or:[{title:title},{ISBN:ISBN}]})
+
+        if(findDuplicateValue) return res.status(409).send({status:false,message:"given value of ISBN/Title is already exist"})
+
+        let updateData = await bookModel.findOneAndUpdate({_id:bookId,isDeleted:false},data,{new:true})
+
+        if (!updateData) { return res.status(404).send({ status: false, msg: "No books found" }) }
+
+        return res.status(200).send({ status: true, data: updateData })
+
+    } catch (error) {
+        console.log("error in updateBook", error.message);
+        res.status(500).send({error:error.message})
+    }
+}
+
+
+
+
+
+
+
+
+
+const deleteBookById = async function (req, res) {
+    try {
+        let bookId = req.params.bookId
+
+        if (!bookId) return res.status(400).send({ status: false, message: "BookId is required." })
+
+        if (!mongoose.isValidObjectId(bookId)) return res.status(400).send({ status: false, message: "Invalid BookId." })
+
+        let deletedBook = await bookModel.findOneAndUpdate({ _id: bookId, isDeleted: false }, { isDeleted: true }, { new: true })
+
+        if (!deletedBook) return res.status(404).send({ status: false, message: "Book not found or book is already deleted" })
+
+        res.status(200).send({ status: true, message: " book is deleted " })
+
+    } catch (err) {
+        res.status(500).send({ status: false, msg: err.message })
+    }
+}
+
+
+
+module.exports = {createBook,getBooks,getBookById,updateBookById,deleteBookById}
