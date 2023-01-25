@@ -34,7 +34,8 @@ const registerUser = async (req,res)=>{
         if(checkDublicate) return res.status(409).send({status:false,msg:"user alredy exist"})
 
         let createUser = await userModel.create(data)
-        res.status(201).send({status:true,msg:"success",data:createUser})
+        let {__v, ...otherData} = createUser._doc
+        res.status(201).send({status:true,msg:"success",data:otherData})
 
     } catch (error) {
         console.log("error in registerUser", error.message);

@@ -1,5 +1,7 @@
-const  jwt  = require("jsonwebtoken")
+const  jwt  = require("jsonwebtoken");
+const { default: mongoose } = require("mongoose");
 const validator = require("validator");
+const bookModel = require("../Models/bookModel");
 
 
 
@@ -27,9 +29,13 @@ const verifyToken = async (req,res,next)=>{
 
 
 
-const verifyTokenAndAuthorization = (req,res,next)=>{
-    verifyToken(req,res,()=>{
-        if(req.tokenDetails.userId === req.params.id){
+const verifyTokenAndAuthorization = async(req,res,next)=>{
+    verifyToken(req,res,async()=>{
+            if(!mongoose.isValidObjectId(req.params.bookId)) return res.status(400).send({status:false,message:"Invalid bookId"})
+            let book = await bookModel.findById(req.params.bookId)
+            if(!book) return res.status(404).send({status:false,message:"Book not found, plz check bookId"})
+            
+        if(req.tokenDetails.userId === book.userId.toString()){
             next()
         }else{
             res.status(403).send({msg:"you are not authorized to perform this task"})

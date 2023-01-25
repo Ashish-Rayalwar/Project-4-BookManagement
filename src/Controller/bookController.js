@@ -10,6 +10,8 @@ const { findOneAndUpdate } = require("../Models/userModel")
 
 // let isbnRegex = /^(?=(?:\D*\d){10}(?:(?:\D*\d){3})?$)[\d-]+$/g
 let isbnRegex = /^(?=(?:\D*\d){10}(?:(?:\D*\d){3})?$)[\d-]+$/
+let validateTitle = /^[^0-9][a-z , A-Z0-9_]+$/
+let validReview = /^[a-z , A-Z0-9_]+$/
 
 
 
@@ -21,10 +23,10 @@ const createBook = async (req,res)=>{
     let {title,excerpt,userId,ISBN,category,subcategory,reviews,releasedAt} = data
 
     if (!title) { return res.status(400).send({ status: false, message: "title is required" }) }
-    if(!validator.isAlpha(title))  return res.status(400).send({status:false,msg:"plz provide valid title"})
+    if(!validateTitle.test(title))  return res.status(400).send({status:false,msg:"plz provide valid title"})
 
     if(!excerpt) return res.status(400).send({status:false,msg:"excerpt is mandatory"})
-    if(!validator.isAlpha(excerpt))  return res.status(400).send({status:false,msg:"plz provide valid excerpt"})
+    if(!validateTitle.test(excerpt))  return res.status(400).send({status:false,msg:"plz provide valid excerpt"})
 
     if(!userId) return res.status(400).send({status:false,msg:"userId is mandatory"})
     if(!mongoose.isValidObjectId(userId)) return res.status(400).send({status:false,msg:"plz provide valid userId"})
@@ -33,10 +35,10 @@ const createBook = async (req,res)=>{
     if(!isbnRegex.test(ISBN)) return res.status(400).send({status:false,message:"Invalid ISBN"})
 
     if(!category) return res.status(400).send({status:false,msg:"category is mandatory"})
-    if(!validator.isAlpha(category))  return res.status(400).send({status:false,msg:"plz provide valid category"})
+    if(!validateTitle.test(category))  return res.status(400).send({status:false,msg:"plz provide valid category"})
 
     if(!subcategory) return res.status(400).send({status:false,msg:"subcategory is mandatory"})
-    if(!validator.isAlpha(subcategory))  return res.status(400).send({status:false,msg:"plz provide valid subcategory"})
+    if(!validateTitle.test(subcategory))  return res.status(400).send({status:false,msg:"plz provide valid subcategory"})
    
     if(!releasedAt) return res.status(400).send({status:false,message:"Releaased date is mandatory, formate (YYYY/MM/DD) "})
     if(!validator.isDate(releasedAt)) return res.status(400).send({status:false,message:"Invalid date or formate,plz send date in this formate (YYYY/MM/DD) "})
@@ -88,13 +90,10 @@ const getBooks = async(req,res)=>{
         if(!validator.isAlpha(data.subcategory))  return res.status(400).send({status:false,msg:"plz provide valid subcategory value"})
     }
 
-    let getBooks = await bookModel.find(data).sort({ title: 1 }).select({ ISBN: 0, subcategory: 0, isDeleted: 0, createdAt: 0, updatedAt: 0, __v: 0 })
+    let getBooks = await bookModel.find(data).sort({ title: 1 }).select({ ISBN: 0, isDeleted: 0, createdAt: 0, updatedAt: 0, __v: 0 })
 
-    if(getBooks.length===0) return res.status(404).send({status:false,message:"document not found"})
 
-    let lengthOfgetbooks = getBooks.length
-
-    res.status(200).send({status:true,count:lengthOfgetbooks,data:getBooks})
+    res.status(200).send({status:true,data:getBooks})
 
     } catch (error) {
         console.log("error in getBooks", error.message);
@@ -119,14 +118,15 @@ const getBookById = async function (req, res) {
         
         if (!mongoose.isValidObjectId(bookId)) return res.status(400).send({ status: false, msg: "bookId is not valid" })
         
-        let bookData = await bookModel.findById({ _id: bookId, isDeleted: false }).select({__v:0,isDeleted:0})
+        let bookData = await bookModel.findById({ _id: bookId, isDeleted: false }).select({__v:0,isDeleted:0}).lean()
 
         if (!bookData) return res.status(404).send({ msg: "no book found" })
         
         let booksReviews = await reviewModel.find({ bookId: bookId, isDeleted: false }).select({ createdAt: 0, updatedAt: 0, isDeleted: 0, __v: 0 })
-
+        // let reviewLength = booksReviews.length
+       
         bookData.booksReviews = booksReviews
-
+        // bookData.reviews = reviewLength
         res.status(200).send({ status: true, message: "Book List", data: bookData })
 
     } catch (err) {
@@ -145,10 +145,10 @@ const updateBookById = async (req,res)=>{
         let { title, excerpt, releasedAt, ISBN} = data
         
         if(title){
-            if(!validator.isAlpha(title.split(" ").join(""))) return res.status(400).send({status:false,message:"plz provide valide title "})
+            if(!validateTitle.test(title.split(" ").join(""))) return res.status(400).send({status:false,message:"plz provide valide title "})
         }
         if(excerpt){
-            if(!validator.isAlpha(excerpt)) return res.status(400).send({status:false,message:"plz provide valide excerpt"})
+            if(!validateTitle.test(excerpt)) return res.status(400).send({status:false,message:"plz provide valide excerpt"})
         }
         if(releasedAt){
             if(!validator.isDate(releasedAt)) return res.status(400).send({status:false,message:"Invalid date or formate,plz send date in this formate (YYYY/MM/DD) "})
