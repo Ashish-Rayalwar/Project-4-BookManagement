@@ -70,14 +70,14 @@ const createReview = async function(req,res){
         if (!bookId)
         return res.status(400).send({ status: false, msg: " please enter bookId" })
 
-        if (!isValidObjectId(bookId)) {
+        if (!mongoose.isValidObjectId(bookId)) {
             return res.status(400).send({ status: false, msg:  "enter valid book id"})
         }
         if (rating < 1 || rating > 5) return res.status(400).send({ status: false, msg: "rating should be inbetween 1 and 5" })
         if(rating){ if(typeof rating != "number"){ return res.status(400).send({msg:"Invalid value of rating"})} }
         if(review){ if(typeof review != "string"){ return res.status(400).send({msg:"Invalid value of review"})} }
         if(reviewedBy){ if(typeof reviewedBy != "string"){ return res.status(400).send({msg:"Invalid value of reviewedBy"})} }
-        let book = await BookModel.findOne({ _id: bookId, isDeleted: false });
+        let book = await bookModel.findOne({ _id: bookId, isDeleted: false });
 
         if (!book) {
             return res.status(404).send({ status: false, msg: "Book  not found" })
@@ -88,11 +88,11 @@ const createReview = async function(req,res){
         if (!reviewId)
         return res.status(400).send({ status: false, msg: " please enter rewiewId" })
 
-        if (!isValidObjectId(reviewId)) {
+        if (!mongoose.isValidObjectId(reviewId)) {
             return res.status(400).send({ status: false, msg: "enter valid review id" })
         }
 
-        let reviewExit = await ReviewModel.findOne({ _id: reviewId, isDeleted: false })
+        let reviewExit = await reviewModel.findOne({ _id: reviewId, isDeleted: false })
         if (!reviewExit) {
             return res.status(404).send({ status: false, msg: "review  not exists" })
         }
@@ -102,7 +102,7 @@ const createReview = async function(req,res){
       
       
 
-        let savedData = await ReviewModel.findOneAndUpdate({ _id: reviewId },
+        let savedData = await reviewModel.findOneAndUpdate({ _id: reviewId },
             data, { updatedAt: new Date(), new: true })
         return res.status(200).send({ status: true, msg: savedData });
     }
@@ -121,29 +121,28 @@ const reviewDelete = async function (req, res) {
         let bookId = req.params.bookId;
         let reviewId = req.params.reviewId;
 
-        if (!isValidObjectId(bookId)) {
+        if (!mongoose.isValidObjectId(bookId)) {
             return res.status(400).send({ status: false, msg: "enter valid book id" })
         }
 
-        if (!isValidObjectId(reviewId)) {
+        if (!mongoose.isValidObjectId(reviewId)) {
             return res.status(400).send({ status: false, msg: "enter valid review id" })
         }
 
-        let book = await BookModel.findOne({ _id: bookId, isDeleted: false })
-        if (!book) {
-            return res.status(404).send({ status: false, msg: "Book  not found" })
-        }
-
-        let review = await ReviewModel.findOne({ _id: reviewId, bookId: bookId ,isDeleted: false })
-        if (!review) {
-            return res.status(404).send({ status: false, msg: "Review  not found and may be resource has been deleted" })
-        }
-
-
-
-        let deletedreview = await ReviewModel.findOneAndUpdate({ _id: reviewId },
-           {$set: { isDeleted: true, deletedAt: new Date() }});
-
+        // let review = await reviewModel.findOne({ _id: reviewId, bookId: bookId ,isDeleted: false })
+        // if (!review) {
+        //     return res.status(404).send({ status: false, msg: "Review  not found and may be resource has been deleted" })
+        // }
+        
+       let deleteReview =  await reviewModel.findOneAndUpdate({ _id: reviewId,isDeleted : false },
+            {$set: { isDeleted: true, deletedAt: new Date() }});
+            
+        if(!deleteReview) return res.status(404).send({status:true,message:"not found or data is deleted"})
+           
+            let book = await bookModel.findOneAndUpdate({ _id: bookId, isDeleted: false },{$inc:{reviews:-1}},{new:true})
+            if (!book) {
+                return res.status(404).send({ status: false, msg: "Book  not found" })
+            }
 
         return res.status(200).send({ status: true, msg: 'Deleted successfully' });
     }
