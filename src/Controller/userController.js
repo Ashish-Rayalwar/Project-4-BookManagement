@@ -13,7 +13,7 @@ const registerUser = async (req,res)=>{
    
         let validTitle = ["Mr","Mrs","Miss"] 
 
-        let {title,name,phone,email,password}= data
+        let {title,name,phone,email,password,address}= data
 
         if(!title) return res.status(400).send({status:false,msg:"Title is mendatory"})
         if(!validTitle.includes(title)) return res.status(400).send({status:false,msg:"plz provide valid title"})
@@ -31,8 +31,23 @@ const registerUser = async (req,res)=>{
         if(password.length>15 || password.length<8) return res.status(400).send({status:false,mesage:"password must be greater than 8 char and less than 15 char"})
         if(!validator.isStrongPassword(password)) return res.status(400).send({status:false,msg:"plz enter valid password, must contain 1 Uppercase,1 Lowercase,1 special-character"})
 
-        let checkDublicate = await userModel.findOne({$or:[{email:email},{phone:phone}]})
-        if(checkDublicate) return res.status(409).send({status:false,msg:"user alredy exist"})
+        if(address!=undefined)
+        {
+            let {pincode}=address;
+            if(pincode)
+            {
+                if(!(/^[^0][0-9]{2}[0-9]{3}$/.test(pincode)))
+                {
+                    return res.status(400).send({status : false,message : "Pincode should be a valid pincode number."}); 
+                }
+            }
+        }
+       
+        let checkDublicateByEmail = await userModel.findOne({email:email})
+        let checkDublicateByPhone = await userModel.findOne({phone:phone})
+       
+        if(checkDublicateByEmail) return res.status(409).send({status:false,msg:"user alredy exist with this email"})
+        if(checkDublicateByPhone) return res.status(409).send({status:false,msg:"user alredy exist with this phone"})
 
         let createUser = await userModel.create(data)
         let {__v, ...otherData} = createUser._doc

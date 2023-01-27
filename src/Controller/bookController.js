@@ -49,11 +49,11 @@ const createBook = async (req,res)=>{
     if(!subcategory) return res.status(400).send({status:false,msg:"subcategory is mandatory"})
     if(!validateTitle.test(subcategory))  return res.status(400).send({status:false,msg:"plz provide valid subcategory"})
    
-    // if(!releasedAt) return res.status(400).send({status:false,message:"Releaased date is mandatory, formate (YYYY/MM/DD) "})
+    if(!releasedAt) return res.status(400).send({status:false,message:"Releaased date is mandatory, formate (YYYY/MM/DD) "})
     
     if(data.releasedAt){
         
-        // if(!validator.isDate(releasedAt)) return res.status(400).send({status:false,message:"Invalid date or formate,plz send date in this formate (YYYY/MM/DD) "})
+        if(!validator.isDate(releasedAt)) return res.status(400).send({status:false,message:"Invalid date or formate,plz send date in this formate (YYYY/MM/DD) "})
         if(currentDate!=data.releasedAt) return res.status(400).send({status:false,message:"plz send date when you are creating this book (YYYY/MM/DD) "})
     }
        
