@@ -20,7 +20,14 @@ const createBook = async (req,res)=>{
     let data = req.body
     if(Object.keys(data).length===0) return res.status(400).send({status:false,msg:"plz provide valid details"})
 
-    let {title,excerpt,userId,ISBN,category,subcategory,reviews,releasedAt} = data
+    let {title,excerpt,userId,ISBN,category,subcategory,reviews} = data
+   
+   
+    let currentDate = new Date().toJSON().slice(0, 10);
+
+        
+      
+      
 
     if (!title) { return res.status(400).send({ status: false, message: "title is required" }) }
     if(!validateTitle.test(title))  return res.status(400).send({status:false,msg:"plz provide valid title"})
@@ -29,6 +36,8 @@ const createBook = async (req,res)=>{
     if(!validateTitle.test(excerpt))  return res.status(400).send({status:false,msg:"plz provide valid excerpt"})
 
     if(!userId) return res.status(400).send({status:false,msg:"userId is mandatory"})
+    userId = data.userId.trim()
+    data.userId = userId
     if(!mongoose.isValidObjectId(userId)) return res.status(400).send({status:false,msg:"plz provide valid userId"})
     if(userId != req.tokenDetails.userId) return res.status(400).send({status:false,msg:"This userId is not exist in token"})
     if(!ISBN) return res.status(400).send({status:false,msg:"ISBN is mandatory"})
@@ -40,9 +49,14 @@ const createBook = async (req,res)=>{
     if(!subcategory) return res.status(400).send({status:false,msg:"subcategory is mandatory"})
     if(!validateTitle.test(subcategory))  return res.status(400).send({status:false,msg:"plz provide valid subcategory"})
    
-    if(!releasedAt) return res.status(400).send({status:false,message:"Releaased date is mandatory, formate (YYYY/MM/DD) "})
-    if(!validator.isDate(releasedAt)) return res.status(400).send({status:false,message:"Invalid date or formate,plz send date in this formate (YYYY/MM/DD) "})
-
+    // if(!releasedAt) return res.status(400).send({status:false,message:"Releaased date is mandatory, formate (YYYY/MM/DD) "})
+    
+    if(data.releasedAt){
+        
+        // if(!validator.isDate(releasedAt)) return res.status(400).send({status:false,message:"Invalid date or formate,plz send date in this formate (YYYY/MM/DD) "})
+        if(currentDate!=data.releasedAt) return res.status(400).send({status:false,message:"plz send date when you are creating this book (YYYY/MM/DD) "})
+    }
+       
     if(reviews) {
         if(typeof(reviews) != "number") return res.status(400).send({status:false,msg:"plz provide valid review"})
     }
@@ -54,10 +68,11 @@ const createBook = async (req,res)=>{
     let findBook = await bookModel.findOne({ $or: [{ title: title }, { ISBN: ISBN }] })
     if(findBook) return res.status(409).send({status:false,message:"given details already exist"})
 
+    data.releasedAt = currentDate
     let createBook = await bookModel.create(data)
-    let {__v, ...otherData} = createBook._doc
-  
-    res.status(201).send({status:true,data:otherData})
+    let {__v,  ...otherData} = createBook._doc
+    
+    res.status(201).send({status:true,data:data})
    } catch (error) {
     console.log("error in create book", error.message);
     res.send(error.message)

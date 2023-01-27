@@ -13,18 +13,24 @@ const createReview = async function(req,res){
     
     let {reviewedBy,rating,review} = data
 
-       
+    
+    
     
     let bookId = req.params.bookId
     data.bookId=bookId  
     data.isDeleted =  false
     data.reviewedAt=Date.now()
     
-     if(!bookId) return res.status(400).send({status:false,massage: "bookId is required"})
-     if(!mongoose.isValidObjectId(bookId)) return res.status(400).send ({status:false,massage:"bookId is not a valid ObjectId"})
-  
-     if(!reviewedBy)  return res.status(400).send ({status:false,message:"reviewer's name is required"})
-     if(!validator.isAlpha(reviewedBy.split(" ").join(""))) return res.status(400).send({status:false,msg:"plz enter valid name"})
+    if(!bookId) return res.status(400).send({status:false,massage: "bookId is required"})
+    if(!mongoose.isValidObjectId(bookId)) return res.status(400).send ({status:false,massage:"bookId is not a valid ObjectId"})
+    if(reviewedBy.trim() == "") return res.status(400).send({status:false,msg:"plz enter valid name"})
+    if(!reviewedBy){
+        data.reviewedBy = "Guest"
+    } else if (reviewedBy){
+        
+         if(!validator.isAlpha(reviewedBy.split(" ").join(""))) return res.status(400).send({status:false,msg:"plz enter valid name"})
+    }
+    //  if(!reviewedBy)  return res.status(400).send ({status:false,message:"reviewer's name is required"})
       
      if(!rating ) return res.status(400).send ({status:false,mesage:"rating is required"})
     
@@ -43,9 +49,10 @@ const createReview = async function(req,res){
     if(!book) return res.status(404).send({status:false,message:"books not found"})
      
      const savedData = await reviewModel.create(data)
-     let reviewsData = await reviewModel.find({bookId:bookId,isDeleted:false}).select({createdAt:0,updatedAt:0,isDeleted:0,__v:0})
-     
-     book.reviewsData=reviewsData    
+    //  let reviewsData = await reviewModel.find({bookId:bookId,isDeleted:false}).select({createdAt:0,updatedAt:0,isDeleted:0,__v:0})
+     let {__v, ...otherData} = savedData._doc
+
+     book.reviewsData=otherData    
  
      res.status(200).send({status:true,message:"Book List",data:book})
   

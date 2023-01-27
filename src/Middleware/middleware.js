@@ -7,7 +7,7 @@ const bookModel = require("../Models/bookModel");
 
 
 const verifyToken = async (req,res,next)=>{
-
+   
     let token = req.headers["token"]
 
     if(!token) return res.status(400).send({status:false,msg:"Token is mandatory"})
@@ -18,6 +18,8 @@ const verifyToken = async (req,res,next)=>{
 
     jwt.verify(token, "group2project-4",(err,tokenDetails)=>{
         if(err) return res.status(403).send({status:false,msg:"Token is Invalid or expire"})
+
+       
         req.tokenDetails = tokenDetails
         next()
     })
