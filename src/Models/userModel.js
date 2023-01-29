@@ -12,6 +12,6 @@ const userSchema = new mongoose.Schema({
     city: { type: String ,trim:true},
     pincode: { type: String,trim:true }
     
-  },{ timestamps: true });
+  }},{ timestamps: true });
 
 module.exports = mongoose.model("User",userSchema)
