@@ -133,7 +133,7 @@ const getBookById = async function (req, res) {
         
         if (!mongoose.isValidObjectId(bookId)) return res.status(400).send({ status: false, message: "bookId is not valid" })
         
-        let bookData = await bookModel.findById({ _id: bookId, isDeleted: false }).select({__v:0,isDeleted:0}).lean()
+        let bookData = await bookModel.findOne({ _id: bookId, isDeleted: false }).select({__v:0, isDeleted:0}).lean()
 
         if (!bookData) return res.status(404).send({ message: "no book found" })
         
