@@ -18,19 +18,17 @@ let validReview = /^[a-z , A-Z0-9_]+$/
 const createBook = async (req,res)=>{
     try {
     let data = req.body
+
     if(Object.keys(data).length===0) return res.status(400).send({status:false,msg:"plz provide valid details"})
 
     let {title,excerpt,userId,ISBN,category,subcategory,reviews,releasedAt} = data
    
-   
-    // let currentDate = new Date().toJSON().slice(0, 10);
-   
-      
-
     if (!title) { return res.status(400).send({ status: false, message: "title is required" }) }
+
     if(!validateTitle.test(title))  return res.status(400).send({status:false,msg:"plz provide valid title"})
 
     if(!excerpt) return res.status(400).send({status:false,msg:"excerpt is mandatory"})
+    
     if(!validateTitle.test(excerpt))  return res.status(400).send({status:false,msg:"plz provide valid excerpt"})
 
     if(!userId) return res.status(400).send({status:false,msg:"userId is mandatory"})
@@ -47,7 +45,7 @@ const createBook = async (req,res)=>{
     if(!subcategory) return res.status(400).send({status:false,msg:"subcategory is mandatory"})
     if(!validateTitle.test(subcategory))  return res.status(400).send({status:false,msg:"plz provide valid subcategory"})
    
-    // if(!data.releasedAt) return res.status(400).send({status:false,message:"Releaased date is mandatory, formate (YYYY/MM/DD) "})
+   
     
 
         
@@ -72,7 +70,7 @@ const createBook = async (req,res)=>{
     let createBook = await bookModel.create(data)
     
     let {__v,  ...otherData} = createBook._doc
-    // otherData.releasedAt = currentDate  
+   
     
     res.status(201).send({status:true,data:otherData})
    } catch (error) {
@@ -142,10 +140,10 @@ const getBookById = async function (req, res) {
         if (!bookData) return res.status(404).send({ msg: "no book found" })
         
         let booksReviews = await reviewModel.find({ bookId: bookId, isDeleted: false }).select({ createdAt: 0, updatedAt: 0, isDeleted: 0, __v: 0 })
-        // let reviewLength = booksReviews.length
+    
        
         bookData.booksReviews = booksReviews
-        // bookData.reviews = reviewLength
+       
         res.status(200).send({ status: true, message: "Book List", data: bookData })
 
     } catch (err) {
@@ -161,7 +159,7 @@ const updateBookById = async (req,res)=>{
     try {
         let data = req.body
         if(Object.keys(data).length===0) return res.status(400).send({status:false,msg:"plz provide valid details for update"})
-        // let keys = Object.keys(data)
+        let keys = Object.keys(data)
         let bookId = req.params.bookId
         if(keys.includes("reviews") || keys.includes("userId") || keys.includes("isDeleted")) {
             return res.status(400).send({status:false, message:"This fields cannot be updated"})

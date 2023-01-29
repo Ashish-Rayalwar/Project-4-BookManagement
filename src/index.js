@@ -17,7 +17,7 @@ app.use("/", route)
 
 const dbconnection = async (url)=>{
    try {
-    mongoose.connect(url,{useNewUrlParser:true})
+   await mongoose.connect(url,{useNewUrlParser:true})
     console.log("Database connect");
    } catch (error) {
     console.log("error while db connection", error.message);

@@ -93,11 +93,7 @@ const loginUser = async(req,res)=>{
     let token = JWT.sign({userId:userId},"group2project-4",{
         expiresIn:86400,
     })
-    // let dekodetoken = JWT.verify(token,"group2project-4" )
-
-    // let iat = dekodetoken.iat
-    // let id = dekodetoken.userId
-    // let exp = dekodetoken.exp
+   
    
     res.setHeader("x-api-key",token)
     res.send({status:true,message:"Login scuccess",data:token})
