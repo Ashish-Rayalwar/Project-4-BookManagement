@@ -7,8 +7,6 @@ const userModel = require("../Models/userModel")
 const reviewModel = require("../Models/reviewModel")
 const { findOneAndUpdate } = require("../Models/userModel")
 
-
-// let isbnRegex = /^(?=(?:\D*\d){10}(?:(?:\D*\d){3})?$)[\d-]+$/g
 let isbnRegex = /^(?=(?:\D*\d){10}(?:(?:\D*\d){3})?$)[\d-]+$/
 let validateTitle = /^[^0-9][a-z , A-Z0-9_ ? @ ! $ % & * : ]+$/
 let validReview = /^[a-z , A-Z0-9_]+$/
@@ -51,7 +49,7 @@ const createBook = async (req,res)=>{
         
         if(!releasedAt) return res.status(400).send({status:false, message:"releaseDate is mandatory, formate should be : (YYYY/MM/DD) "})
         if(!validator.isDate(releasedAt)) return res.status(400).send({status:false, message:"Invalid date or formate,plz send date in this formate (YYYY/MM/DD) "})
-        // if(currentDate!=data.releasedAt) return res.status(400).send({status:false, message:"plz send date when you are creating this book (YYYY/MM/DD) "})
+      
     
        
     if(reviews) {
