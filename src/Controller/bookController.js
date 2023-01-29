@@ -108,7 +108,7 @@ const getBooks = async(req,res)=>{
     let getBooks = await bookModel.find(data).sort({ title: 1 }).select({ ISBN: 0, isDeleted: 0, createdAt: 0, updatedAt: 0, __v: 0 })
     if(getBooks.length===0) return res.status(404).send({status:false,message:"book not found"})
 
-    res.status(200).send({status:true, data:getBooks})
+    res.status(200).send({status:true, message: "Book List", data:getBooks})
 
     } catch (error) {
         console.log("error in getBooks", error.message);
@@ -187,7 +187,7 @@ const updateBookById = async (req,res)=>{
 
         if (!updateData) { return res.status(404).send({ status: false, message: "No books found" }) }
 
-        return res.status(200).send({ status: true, data: updateData })
+        return res.status(200).send({ status: true, message:"Book Updation success", data: updateData })
 
     } catch (error) {
         console.log("error in updateBook", error.message);
