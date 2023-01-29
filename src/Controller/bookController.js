@@ -35,7 +35,7 @@ const createBook = async (req,res)=>{
     userId = data.userId.trim()
     data.userId = userId;
     if(!mongoose.isValidObjectId(userId)) return res.status(400).send({status:false, message:"plz provide valid userId"})
-    if(userId != req.tokenDetails.userId) return res.status(400).send({status:false, message:"This userId is not exist in token"})
+    if(userId != req.tokenDetails.userId) return res.status(400).send({status:false, message:"This userId does not exist in token"})
     if(!ISBN) return res.status(400).send({status:false, message:"ISBN is mandatory"})
     if(!isbnRegex.test(ISBN)) return res.status(400).send({status:false, message:"Invalid ISBN"})
 
@@ -162,28 +162,28 @@ const updateBookById = async (req,res)=>{
         let keys = Object.keys(data)
         let bookId = req.params.bookId
         if(keys.includes("reviews") || keys.includes("userId") || keys.includes("isDeleted")) {
-            return res.status(400).send({status:false, message:"This fields cannot be updated"})
+            return res.status(400).send({status:false, message:"This field can't be Updated"})
         }
      
       
         let { title, excerpt, releasedAt, ISBN} = data
         
         if(title){
-            if(!validateTitle.test(title.split(" ").join(""))) return res.status(400).send({status:false, message:"plz provide valide title "})
+            if(!validateTitle.test(title.split(" ").join(""))) return res.status(400).send({status:false, message:"plz provide valid title "})
         }
         if(excerpt){
-            if(!validateTitle.test(excerpt)) return res.status(400).send({status:false, message:"plz provide valide excerpt"})
+            if(!validateTitle.test(excerpt)) return res.status(400).send({status:false, message:"plz provide valid excerpt"})
         }
         if(releasedAt){
             if(!validator.isDate(releasedAt)) return res.status(400).send({status:false, message:"Invalid date or formate,plz send date in this formate (YYYY/MM/DD) "})
         }
         if(ISBN){
-            if(!isbnRegex.test(ISBN)) return res.status(400).send({status:false, message:"plz provide valide regex ISBN"})
+            if(!isbnRegex.test(ISBN)) return res.status(400).send({status:false, message:"plz provide valid regex ISBN"})
         }
 
         let findDuplicateValue = await bookModel.findOne({$or:[{title:title},{ISBN:ISBN}]})
 
-        if(findDuplicateValue) return res.status(409).send({status:false, message:"given value of ISBN/Title is already exist"})
+        if(findDuplicateValue) return res.status(409).send({status:false, message:"given value of ISBN/Title already exist"})
 
         let updateData = await bookModel.findOneAndUpdate({_id:bookId, isDeleted:false},data,{new:true})
 
