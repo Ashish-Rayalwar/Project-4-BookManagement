@@ -15,7 +15,7 @@ const createReview = async function(req,res){
 
     let bookId = req.params.bookId;
 
-    if(data.bookId!=bookId) return res.status(400).send({status:false,mesage:"params bookId and body's book id is not same"})
+    if(data.bookId!=bookId) return res.status(400).send({status:false, message:"params bookId and body's book id is not same"})
     data.isDeleted =  false
     if(!data.reviewedAt){
         data.reviewedAt=Date.now()
@@ -35,10 +35,10 @@ const createReview = async function(req,res){
       
      if(!rating ) return res.status(400).send ({status:false, message:"rating is required"})
     
-     if(!(rating>=1 && rating<=5))return res.status(400).send({ status: false, message: "rating should be in between 0 to 5" })
+     if(!(rating>=1 && rating<=5))return res.status(400).send({ status: false, message: "rating should be in between 1 to 5" })
 
 
-     if(typeof rating!="number") return res.status(400).send ({status:false,message:"invalid rating / rating must be innumber"})
+     if(typeof rating!="number") return res.status(400).send ({status:false, message:"invalid rating / rating must be innumber"})
      
      if(review){
 
