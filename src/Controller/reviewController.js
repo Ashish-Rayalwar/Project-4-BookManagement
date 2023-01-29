@@ -3,7 +3,7 @@ const reviewModel = require("../Models/reviewModel");
 
 const validator = require("validator");
 const bookModel = require("../Models/bookModel");
-let validReview = /^[a-z , A-Z0-9_]+$/
+
 const createReview = async function(req,res){
     try{
     let data = req.body;
