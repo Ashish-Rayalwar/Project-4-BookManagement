@@ -8,7 +8,7 @@ const bookModel = require("../Models/bookModel");
 
 const verifyToken = async (req,res,next)=>{
    
-    let token = req.headers["token"]
+    let token = req.headers["x-api-key"]
 
     if(!token) return res.status(400).send({status:false,msg:"Token is mandatory"})
 

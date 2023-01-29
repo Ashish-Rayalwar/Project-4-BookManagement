@@ -10,7 +10,7 @@ const { findOneAndUpdate } = require("../Models/userModel")
 
 // let isbnRegex = /^(?=(?:\D*\d){10}(?:(?:\D*\d){3})?$)[\d-]+$/g
 let isbnRegex = /^(?=(?:\D*\d){10}(?:(?:\D*\d){3})?$)[\d-]+$/
-let validateTitle = /^[^0-9][a-z , A-Z0-9_]+$/
+let validateTitle = /^[^0-9][a-z , A-Z0-9_ ? @ ! $ % & * : ]+$/
 let validReview = /^[a-z , A-Z0-9_]+$/
 
 
@@ -20,13 +20,11 @@ const createBook = async (req,res)=>{
     let data = req.body
     if(Object.keys(data).length===0) return res.status(400).send({status:false,msg:"plz provide valid details"})
 
-    let {title,excerpt,userId,ISBN,category,subcategory,reviews} = data
+    let {title,excerpt,userId,ISBN,category,subcategory,reviews,releasedAt} = data
    
    
-    let currentDate = new Date().toJSON().slice(0, 10);
-
-        
-      
+    // let currentDate = new Date().toJSON().slice(0, 10);
+   
       
 
     if (!title) { return res.status(400).send({ status: false, message: "title is required" }) }
@@ -49,16 +47,18 @@ const createBook = async (req,res)=>{
     if(!subcategory) return res.status(400).send({status:false,msg:"subcategory is mandatory"})
     if(!validateTitle.test(subcategory))  return res.status(400).send({status:false,msg:"plz provide valid subcategory"})
    
-    if(!releasedAt) return res.status(400).send({status:false,message:"Releaased date is mandatory, formate (YYYY/MM/DD) "})
+    // if(!data.releasedAt) return res.status(400).send({status:false,message:"Releaased date is mandatory, formate (YYYY/MM/DD) "})
     
-    if(data.releasedAt){
+
         
+        if(!releasedAt) return res.status(400).send({status:false,message:"releaseDate is mandatory, formate should be in (YYYY/MM/DD) "})
         if(!validator.isDate(releasedAt)) return res.status(400).send({status:false,message:"Invalid date or formate,plz send date in this formate (YYYY/MM/DD) "})
-        if(currentDate!=data.releasedAt) return res.status(400).send({status:false,message:"plz send date when you are creating this book (YYYY/MM/DD) "})
-    }
+        // if(currentDate!=data.releasedAt) return res.status(400).send({status:false,message:"plz send date when you are creating this book (YYYY/MM/DD) "})
+    
        
     if(reviews) {
         if(typeof(reviews) != "number") return res.status(400).send({status:false,msg:"plz provide valid review"})
+        data.reviews = 0
     }
 
     let findUser = await userModel.findById({_id:userId})
@@ -68,11 +68,13 @@ const createBook = async (req,res)=>{
     let findBook = await bookModel.findOne({ $or: [{ title: title }, { ISBN: ISBN }] })
     if(findBook) return res.status(409).send({status:false,message:"given details already exist"})
 
-    data.releasedAt = currentDate
+   
     let createBook = await bookModel.create(data)
-    let {__v,  ...otherData} = createBook._doc
     
-    res.status(201).send({status:true,data:data})
+    let {__v,  ...otherData} = createBook._doc
+    // otherData.releasedAt = currentDate  
+    
+    res.status(201).send({status:true,data:otherData})
    } catch (error) {
     console.log("error in create book", error.message);
     res.send(error.message)
@@ -85,14 +87,16 @@ const getBooks = async(req,res)=>{
     let data = req.query
   
     let keys = Object.keys(data)
-
+        keys.forEach((x)=>{
+            return x.toLowerCase()
+        })
     data.isDeleted = false
 
     if(keys.length===0) {
         let getAllBooks = await bookModel.find(data).sort({ title: 1 }).select({ ISBN: 0, subcategory: 0, isDeleted: 0, createdAt: 0, updatedAt: 0, __v: 0 })
         if(getAllBooks.length===0) return res.status(404).send({status:false,message:"document not found"})
         let lengthOfAllbooks = getAllBooks.length
-        return res.status(200).send({status:true,count:lengthOfAllbooks,data:getAllBooks})
+        return res.status(200).send({status:true,TotalBooks:lengthOfAllbooks,data:getAllBooks})
     }
 
     if(keys.includes("userId")){
@@ -106,7 +110,7 @@ const getBooks = async(req,res)=>{
     }
 
     let getBooks = await bookModel.find(data).sort({ title: 1 }).select({ ISBN: 0, isDeleted: 0, createdAt: 0, updatedAt: 0, __v: 0 })
-
+    if(getBooks.length===0) return res.status(404).send({status:false,message:"book not found"})
 
     res.status(200).send({status:true,data:getBooks})
 
@@ -156,7 +160,14 @@ const getBookById = async function (req, res) {
 const updateBookById = async (req,res)=>{
     try {
         let data = req.body
+        if(Object.keys(data).length===0) return res.status(400).send({status:false,msg:"plz provide valid details for update"})
+        // let keys = Object.keys(data)
         let bookId = req.params.bookId
+        if(keys.includes("reviews") || keys.includes("userId") || keys.includes("isDeleted")) {
+            return res.status(400).send({status:false, message:"This fields cannot be updated"})
+        }
+     
+      
         let { title, excerpt, releasedAt, ISBN} = data
         
         if(title){

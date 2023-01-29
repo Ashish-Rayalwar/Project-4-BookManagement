@@ -11,19 +11,22 @@ const createReview = async function(req,res){
     if(Object.keys(data).length===0) return res.status(400).send({status:false,message:"plz send data for create review"})
     if(!data) return res.status(400).send ({status:false,messaage: "plz send review Data"})
     
-    let {reviewedBy,rating,review} = data
+    let {reviewedBy,rating,review,reviewedAt} = data
 
     
     
     
     let bookId = req.params.bookId
-    data.bookId=bookId  
+    if(data.bookId!=bookId) return res.status(400).send({status:false,mesage:"params bookId and body's book id is not same"})
     data.isDeleted =  false
-    data.reviewedAt=Date.now()
+    if(!data.reviewedAt){
+        data.reviewedAt=Date.now()
+    }
     
     if(!bookId) return res.status(400).send({status:false,massage: "bookId is required"})
     if(!mongoose.isValidObjectId(bookId)) return res.status(400).send ({status:false,massage:"bookId is not a valid ObjectId"})
-    if(reviewedBy.trim() == "") return res.status(400).send({status:false,msg:"plz enter valid name"})
+   
+
     if(!reviewedBy){
         data.reviewedBy = "Guest"
     } else if (reviewedBy){
@@ -34,7 +37,7 @@ const createReview = async function(req,res){
       
      if(!rating ) return res.status(400).send ({status:false,mesage:"rating is required"})
     
-     if(!(rating>=0 && rating<=5))return res.status(400).send({ status: false, msg: "rating should be in between 0 to 5" })
+     if(!(rating>=1 && rating<=5))return res.status(400).send({ status: false, msg: "rating should be in between 0 to 5" })
 
 
      if(typeof rating!="number") return res.status(400).send ({status:false,mesage:"invalid rating / rating must be innumber"})
@@ -99,8 +102,8 @@ const createReview = async function(req,res){
             return res.status(400).send({ status: false, msg: "enter valid review id" })
         }
 
-        let reviewExit = await reviewModel.findOne({ _id: reviewId, isDeleted: false })
-        if (!reviewExit) {
+        let reviewExist = await reviewModel.findOne({ _id:reviewId, isDeleted: false })
+        if (!reviewExist) {
             return res.status(404).send({ status: false, msg: "review  not exists" })
         }
     //    if(typeof rating != "number" || typeof review != "string"|| typeof reviewedBy != "string"){
