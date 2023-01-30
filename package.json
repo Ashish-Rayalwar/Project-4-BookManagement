@@ -11,6 +11,13 @@
     "type": "git",
     "url": "git+https://github.com/Ashish-Rayalwar/Project-4-BookManagement.git"
   },
+
+  "engines" : { 
+    "npm" : ">=8.0.0 <9.0.0",
+    "node" : ">=16.0.0 <17.0.0"
+  },
+
+
   "author": "",
   "license": "ISC",
   "bugs": {
@@ -18,6 +25,7 @@
   },
   "homepage": "https://github.com/Ashish-Rayalwar/Project-4-BookManagement#readme",
   "dependencies": {
+    "cors": "^2.8.5",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.0",
